@@ -33,7 +33,7 @@ def import_via_import_from_pandas(num_rows, json, run):
     C.commit()
     stopwatch.stop()
     C.close()
-    print("%s,import_from_pandas,%s,%s,%s"%(run, json, num_rows, str(stopwatch.duration)),flush=True)
+    print("%s,import_from_pandas,%s,%s,1,%s"%(run, json, num_rows, str(stopwatch.duration)),flush=True)
 
 def import_via_prepared_statement(num_rows, num_iterations, json, run):
     df = generate_dataset(num_rows)
@@ -63,13 +63,25 @@ def import_via_prepared_statement(num_rows, num_iterations, json, run):
     C.commit()
     stopwatch.stop()
     C.close()
-    print("%s,prepared_statement,%s,%s/%s,%s"%(run, json, num_rows, num_iterations, str(stopwatch.duration)),flush=True)
+    print("%s,prepared_statement,%s,%s,%s,%s"%(run, json, num_rows, num_iterations, str(stopwatch.duration)),flush=True)
+
+def import_via_insert_multi(num_rows, json, run):
+    df = generate_dataset(num_rows)
+    tuples = [tuple(x) for x in df.values]
+    C = create_connection(json)
+    stopwatch = Stopwatch()
+    C.ext.insert_multi("PREPARED_STATEMENT_INSERT",tuples)
+    C.commit()
+    stopwatch.stop()
+    C.close()
+    print("%s,insert_mutli,%s,%s,1,%s"%(run, json, num_rows, str(stopwatch.duration)),flush=True)
 
 for run in range(10):
     for json in ["json","ujson","rapidjson"]:
         for row_power in range(0,7):
             num_rows = 10 ** row_power
             import_via_import_from_pandas(num_rows,json,run)
+            import_via_insert_multi(num_rows,json,run)
             for iterations_power in range(0,max(1,row_power-1)):
                 num_iterations = 10 ** iterations_power 
                 import_via_prepared_statement(num_rows,num_iterations,json,run)
