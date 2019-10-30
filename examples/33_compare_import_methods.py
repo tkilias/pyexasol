@@ -67,14 +67,27 @@ def import_via_prepared_statement(num_rows, num_iterations, json, run):
 
 def import_via_insert_multi(num_rows, json, run):
     df = generate_dataset(num_rows)
-    tuples = [tuple(x) for x in df.values]
     C = create_connection(json)
     stopwatch = Stopwatch()
+    tuples = [tuple(x) for x in df.values]
     C.ext.insert_multi("PREPARED_STATEMENT_INSERT",tuples)
     C.commit()
     stopwatch.stop()
     C.close()
     print("%s,insert_mutli,%s,%s,1,%s"%(run, json, num_rows, str(stopwatch.duration)),flush=True)
+
+def test_df_to_tuples():
+    dataset_size = 100000
+    iterations_per_measurment = 100
+    measurments = 10
+    df = generate_dataset(dataset_size)
+    for t in range(measurments):
+        stopwatch = Stopwatch()
+        for i in range(iterations_per_measurment):
+            tuples = [(tuple(x),x,i) for x in df.values]
+        stopwatch.stop()
+        print("time: ",str(stopwatch.duration/iterations_per_measurment),flush=True)
+        print(tuples[0],flush=True)
 
 for run in range(10):
     for json in ["json","ujson","rapidjson"]:
