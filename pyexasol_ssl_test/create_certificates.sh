@@ -30,7 +30,7 @@ countryName = XX
 stateOrProvinceName = N/A
 localityName = N/A
 organizationName = Self-signed certificate
-commonName = $DOMAIN: Self-signed certificate
+commonName = $DOMAIN
 [req_ext]
 subjectAltName = @alt_names
 [v3_req]
